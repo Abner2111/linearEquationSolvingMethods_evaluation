@@ -1,22 +1,24 @@
 import numpy as np
 
-def gaussian_elimination(M, d):
-    # Realiza la eliminación gaussiana
+def gaussian_elimination_complex(M, d):
+    # Tamaño del sistema de ecuaciones
     n = len(d)
-    augmented_matrix = np.concatenate((M.astype(np.float64), d.astype(np.float64).reshape(-1, 1)), axis=1)
+    # Crear la matriz aumentada
+    augmented_matrix = np.concatenate((M.astype(np.complex128), d.astype(np.complex128).reshape(-1, 1)), axis=1)
 
+    # Eliminación gaussiana
     for i in range(n):
-        # Pivotea la matriz
+        # Encuentra la fila con el pivote más grande y realiza intercambio
         pivot_row = max(range(i, n), key=lambda k: abs(augmented_matrix[k, i]))
         augmented_matrix[[i, pivot_row]] = augmented_matrix[[pivot_row, i]]
 
-        # Elimina por debajo del pivote
+        # Hace ceros debajo del pivote en la columna actual
         for j in range(i + 1, n):
             factor = augmented_matrix[j, i] / augmented_matrix[i, i]
             augmented_matrix[j, i:] -= factor * augmented_matrix[i, i:]
 
-    # Sustitución hacia atrás
-    x = np.zeros(n)
+    # Sustitución hacia atrás para encontrar la solución
+    x = np.zeros(n, dtype=np.complex128)
     for i in range(n - 1, -1, -1):
         x[i] = augmented_matrix[i, -1] / augmented_matrix[i, i]
         for j in range(i - 1, -1, -1):
@@ -24,34 +26,64 @@ def gaussian_elimination(M, d):
 
     return x
 
-def qr_factorization(M):
-    # Realiza la factorización QR
-    Q, R = np.linalg.qr(M.astype(np.float64))
+def qr_factorization(A):
+    # Dimensiones de la matriz A
+    m, n = A.shape
+    # Matrices Q y R inicializadas
+    Q = np.zeros((m, n), dtype=np.complex128)
+    R = np.zeros((n, n), dtype=np.complex128)
+
+    # Factorización QR
+    for j in range(n):
+        v = A[:, j].copy().astype(np.complex128)  # Copia y asegura tipo complejo
+        for i in range(j):
+            # Calcula las entradas de R y actualiza el vector v
+            R[i, j] = np.dot(Q[:, i].conj(), A[:, j])
+            v -= R[i, j] * Q[:, i]
+
+        # Calcula la entrada diagonal de R y normaliza el vector v
+        R[j, j] = np.linalg.norm(v, 2)
+        Q[:, j] = v / R[j, j]
+
     return Q, R
 
-# Ejemplo de uso
-W = np.array([[1, 2], [3, 4]])
-T = np.array([[5, 6], [7, 8]])
-p = np.array([9, 10])
-q = np.array([11, 12])
+def question4_example():
+    # Definir matrices y vectores de prueba
+    W = np.array([[1, 2], [3, 4]])
+    T = np.array([[5, 6], [7, 8]])
+    p = np.array([9, 10])
+    q = np.array([11, 12])
 
-A = W + 1j * T
-b = p + 1j * q
+    # Construir la matriz aumentada y el vector de constantes
+    A_real = np.block([[W, -T], [T, W]])
+    d_real = np.concatenate([p, q])
 
-# Crea el sistema de valores reales
-M = np.block([[W, -T], [T, W]])
-d = np.concatenate([p, q])
+    # Resolver usando eliminación gaussiana
+    sol_gaussian = gaussian_elimination_complex(A_real, d_real)
+    print("Solution (Gaussian elimination):", sol_gaussian)
 
-# Resuelve usando eliminación gaussiana
-solucion_gaussiana = gaussian_elimination(M, d)
-print("Solución (eliminación gaussiana):", solucion_gaussiana)
+    # Resolver usando factorización QR sin np.linalg.qr
+    Q_manual, R_manual = qr_factorization(A_real)
+    sol_qr_manual = np.linalg.solve(R_manual, np.dot(Q_manual.T, d_real))
+    print("Solution (QR factorization - manual):", sol_qr_manual)
 
-# Resuelve usando factorización QR
-Q, R = qr_factorization(M)
-solucion_qr = np.linalg.solve(R, np.dot(Q.T, d))
-print("Solución (factorización QR):", solucion_qr)
+    # Verificar las soluciones convirtiendo a números complejos
+    A_complex = W + 1j * T
+    x_gaussian = sol_gaussian[:2] + 1j * sol_gaussian[2:]
+    x_qr_manual = sol_qr_manual[:2] + 1j * sol_qr_manual[2:]
 
-# Verifica la solución
-Ax = np.dot(A, solucion_gaussiana[:2])  # Ajusta los índices según el tamaño de las matrices
-error = np.linalg.norm(Ax - b, 2)
-print("Error:", error)
+    # Calcular Ax y comparar con el lado derecho del sistema original
+    Ax_gaussian = np.dot(A_complex, x_gaussian)
+    Ax_qr_manual = np.dot(A_complex, x_qr_manual)
+
+    # Calcular errores
+    b = p + 1j * q
+    error_gaussian = np.linalg.norm(Ax_gaussian - b, 2)
+    error_qr_manual = np.linalg.norm(Ax_qr_manual - b, 2)
+
+    # Imprimir resultados
+    print("Error (Gaussian elimination):", error_gaussian)
+    print("Error (QR factorization - manual):", error_qr_manual)
+
+# Ejecutar la función de ejemplo
+question4_example()
