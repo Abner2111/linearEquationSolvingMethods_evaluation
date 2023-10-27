@@ -26,7 +26,7 @@ if __name__ == "__main__":
     p = np.array([[9], [-7], [-5], [7]], dtype=complex)
     q = np.array([[12], [-4], [17], [-2]], dtype=complex)
     A = (W + 1j * T, p + 1j * q)
-    x0 = np.array([[0], [0], [0], [0]], dtype=complex)
+    x0 = np.array([[1], [-1], [0], [-0]], dtype=complex)
     iter_max = 1000
     tol = 1e-12
 
