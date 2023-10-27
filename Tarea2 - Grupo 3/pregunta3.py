@@ -13,7 +13,7 @@ def MHSS(A, x0, iter_max, tol):
         M = np.linalg.inv(alpha_star * Im + T).dot((alpha_star * Im + 1j * W).dot(np.linalg.inv(alpha_star * Im + W).dot(alpha_star * Im - 1j * T)))
         N = (1 - 1j) * alpha_star * np.linalg.inv(alpha_star * Im + T).dot(np.linalg.inv(alpha_star * Im + W))
 
-        x_new = M.dot(x) + N.dot(x0)
+        x_new = M.dot(x) + N.dot(A[1])
         if np.linalg.norm(A[0].dot(x_new) - x0) < tol:
             return x_new
         x = x_new
