@@ -1,21 +1,21 @@
 import numpy as np
 
 def gaussian_elimination(M, d):
-    # Perform Gaussian elimination
+    # Realiza la eliminación gaussiana
     n = len(d)
     augmented_matrix = np.concatenate((M.astype(np.float64), d.astype(np.float64).reshape(-1, 1)), axis=1)
 
     for i in range(n):
-        # Pivot the matrix
+        # Pivotea la matriz
         pivot_row = max(range(i, n), key=lambda k: abs(augmented_matrix[k, i]))
         augmented_matrix[[i, pivot_row]] = augmented_matrix[[pivot_row, i]]
 
-        # Eliminate below the pivot
+        # Elimina por debajo del pivote
         for j in range(i + 1, n):
             factor = augmented_matrix[j, i] / augmented_matrix[i, i]
             augmented_matrix[j, i:] -= factor * augmented_matrix[i, i:]
 
-    # Back-substitution
+    # Sustitución hacia atrás
     x = np.zeros(n)
     for i in range(n - 1, -1, -1):
         x[i] = augmented_matrix[i, -1] / augmented_matrix[i, i]
@@ -25,11 +25,11 @@ def gaussian_elimination(M, d):
     return x
 
 def qr_factorization(M):
-    # Perform QR factorization
+    # Realiza la factorización QR
     Q, R = np.linalg.qr(M.astype(np.float64))
     return Q, R
 
-# Example usage
+# Ejemplo de uso
 W = np.array([[1, 2], [3, 4]])
 T = np.array([[5, 6], [7, 8]])
 p = np.array([9, 10])
@@ -38,20 +38,20 @@ q = np.array([11, 12])
 A = W + 1j * T
 b = p + 1j * q
 
-# Create the real-valued system
+# Crea el sistema de valores reales
 M = np.block([[W, -T], [T, W]])
 d = np.concatenate([p, q])
 
-# Solve using Gaussian elimination
-solution_gaussian = gaussian_elimination(M, d)
-print("Solution (Gaussian elimination):", solution_gaussian)
+# Resuelve usando eliminación gaussiana
+solucion_gaussiana = gaussian_elimination(M, d)
+print("Solución (eliminación gaussiana):", solucion_gaussiana)
 
-# Solve using QR factorization
+# Resuelve usando factorización QR
 Q, R = qr_factorization(M)
-solution_qr = np.linalg.solve(R, np.dot(Q.T, d))
-print("Solution (QR factorization):", solution_qr)
+solucion_qr = np.linalg.solve(R, np.dot(Q.T, d))
+print("Solución (factorización QR):", solucion_qr)
 
-# Verify the solution
-Ax = np.dot(A, solution_gaussian[:2])  # Adjust indices based on the size of the matrices
+# Verifica la solución
+Ax = np.dot(A, solucion_gaussiana[:2])  # Ajusta los índices según el tamaño de las matrices
 error = np.linalg.norm(Ax - b, 2)
 print("Error:", error)
