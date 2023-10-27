@@ -34,6 +34,4 @@ if __name__ == "__main__":
 
     print("Solución encontrada:")
     print(solution)
-    print("Solución real:")
-    real_solution = np.array([[1], [-1], [1j], [-1j]], dtype=complex)
-    print(real_solution)
+    
