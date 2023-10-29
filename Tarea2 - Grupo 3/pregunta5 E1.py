@@ -163,7 +163,7 @@ def PSHSS(W, T, p, q, alpha, omega, max_iter, tol, x0):
 
         if np.linalg.norm(np.dot(Am,x_k)-b) < np.linalg.norm(b)*tol:
             elapsed_time = time.time() - start_time
-            return x_k, error, max_iter,elapsed_time
+            return x_k, error, iteraciones,elapsed_time
     elapsed_time = time.time() - start_time
     return x_k, error, max_iter,elapsed_time
 
@@ -285,6 +285,7 @@ for i in range(len(linear_systems)):
     print("\n")
 
 #METODO 3 PSHSS(W, T, p, q, alpha, omega, max_iter, tol, x0)for i in range(len(linear_systems)):
+for i in range(len(linear_systems)):
     n = linear_systems[i][0]
     W = linear_systems[i][1]
     T = linear_systems[i][2]
@@ -292,7 +293,7 @@ for i in range(len(linear_systems)):
     A = W + 1j*T
     x0 = np.zeros((n**2,1))
     x_k, error, iter, elapsed_time =PSHSS(W, T, np.real(b), np.imag(b),1,1,ITERMAX, TOL, x0)
-    print("Metodo2:\tPSHSS")
+    print("Metodo3:\tPSHSS")
     print("\tCaso:",(i+1),"\t"," m=",n)
     print("\terror = ",error)
     print("\tTiempo de ejecucion = ",elapsed_time," segs")
