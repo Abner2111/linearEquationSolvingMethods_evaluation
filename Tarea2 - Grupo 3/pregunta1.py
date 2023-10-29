@@ -1,7 +1,7 @@
 import numpy as np
 import time
 
-def hss(A, b, x0, max_iter=1000, tol=1e-12):
+def hss(A, b, x0, exact_solution, max_iter=1000, tol=1e-12):
     # Inicialización de variables
     n = A.shape[0]
     x = x0
@@ -20,16 +20,17 @@ def hss(A, b, x0, max_iter=1000, tol=1e-12):
             # Cálculo del tiempo de ejecución
             elapsed_time = time.time() - start_time
 
-            # Cálculo del error
-            error = np.linalg.norm(np.dot(A, x) - b, 2)
+            # Cálculo del error en comparación con la solución exacta
+            error = np.linalg.norm(x - exact_solution, 2)
 
             # Devolver variables por separado
-            return x, k + 1, elapsed_time, error, np.linalg.solve(A, b)
+            return x, k + 1, elapsed_time, error, exact_solution
 
     # Si no converge en max_iter iteraciones
     elapsed_time = time.time() - start_time
-    error = np.linalg.norm(np.dot(A, x) - b, 2)
-    return x, max_iter, elapsed_time, error, np.linalg.solve(A, b)
+    error = np.linalg.norm(x - exact_solution, 2)
+    return x, max_iter, elapsed_time, error, exact_solution
+
 
 
 # Definición de matrices y parámetros
@@ -48,10 +49,12 @@ iter_max = 1000
 tol = 1e-12
 
 
+exact_solution = np.array([1, -1, 1j, -1j], dtype=complex)
 
-solution, iterations, elapsed_time, error, exact_solution = hss(A, b, x0, iter_max, tol)
+solution, iterations, elapsed_time, error, _ = hss(A, b, x0, exact_solution, iter_max, tol)
+
 print("Solución aproximada:", solution)
 print("Iteraciones realizadas:", iterations)
 print("Tiempo de ejecución:", elapsed_time)
-print("Error:", error)
+print("Error en comparación con la solución exacta:", error)
 print("Solución exacta:", exact_solution)
