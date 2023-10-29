@@ -3,6 +3,18 @@ import time
 ITERMAX = 5000
 TOL = 1e-6
 def tridiagMatrix(a,b,c,m):
+    """
+    The function tridiagMatrix creates a tridiagonal matrix with given values for the main diagonal (b),
+    the upper diagonal (c), and the lower diagonal (a).
+    
+    :param a: The parameter "a" represents the diagonal element below the main diagonal of the
+    tridiagonal matrix
+    :param b: The main diagonal element of the tridiagonal matrix
+    :param c: The parameter `c` represents the diagonal elements of the tridiagonal matrix
+    :param m: The parameter `m` represents the size of the tridiagonal matrix. It determines the number
+    of rows and columns in the matrix
+    :return: a tridiagonal matrix A.
+    """
     A = np.zeros((m,m))
     n = len(A)
 
@@ -19,19 +31,55 @@ def tridiagMatrix(a,b,c,m):
     return A
 
 def v(m,h):
+    """
+    The function calculates the Vm value using a tridiagonal matrix and given parameters.
+    
+    :param m: The parameter "m" is not defined in the given code. It seems to be a missing input
+    parameter. Could you please provide more information about what "m" represents?
+    :param h: The parameter "h" represents the step size or spacing between the points in the grid. It
+    is used to calculate the inverse of the square of "h" in the formula
+    :return: the variable Vm.
+    """
     Vm = (1/h**2)*tridiagMatrix(-1,2,-1,m)
     
     return Vm
 
 def k(m, I,h):
+    """
+    The function `k` calculates the Kronecker product of two matrices `I` and `Vm`, and returns the sum
+    of the two resulting matrices.
+    
+    :param m: The parameter "m" is not defined in the given code snippet. It seems to be a missing
+    variable or function that should be defined elsewhere in the code
+    :param I: The parameter "I" is the identity matrix. It is used in the
+    function to create a Kronecker product with the matrix "Vm"
+    :param h: The parameter "h" is not defined in the given code snippet. It seems to be a missing
+    variable or function that is required for the calculation. Please provide more information or
+    context so that I can assist you further
+    :return: the value of K.
+    """
     Vm = v(m,h)
     K = np.kron(I,Vm) + np.kron(Vm,I)
     return K
 def b_(A):
+    """
+    The function `b_` takes a matrix `A` as input, multiplies it by a complex number, and returns the
+    result.
+    
+    :param A: A is a numpy array representing the coeffitient matrix
+    :return: the complex conjugate of the dot product of matrix A and a column vector of ones, the right hand side vector b
+    """
     one = np.ones((len(A), 1))
     B = (1+1j)*np.dot(A,one)
     return B
 def W_T_b(m):
+    """
+    The function calculates and returns the matrices W, T, and B, which are normalized by h^2, given the
+    input parameter m, the output matrixes will be of size m^2
+    
+    :param m: The parameter "m" represents the size of the matrix
+    :return: three matrices: W, T, and B. Each matrix is multiplied by (h^2) before being returned for normalization
+    """
     sigma1 = 1
     sigma2 = 1
     h = 1/(m+1)
@@ -211,7 +259,7 @@ def gaussian_elimination_complex(M, d):
         x[i] = augmented_matrix[i, -1] / augmented_matrix[i, i]
         for j in range(i - 1, -1, -1):
             augmented_matrix[j, -1] -= augmented_matrix[j, i] * x[i]
-
+    
     return x
 
 def qr_factorization(A):
@@ -245,15 +293,17 @@ def solGaussiana(W,T,b):
     sol_gaussian = gaussian_elimination_complex(A_real, d_real)
     # Verificar las soluciones convirtiendo a números complejos
     A_complex = W + 1j * T
+    
     startTime = time.time()
-    x_gaussian = sol_gaussian[:2] + 1j * sol_gaussian[2:]
-    # Calcular Ax y comparar con el lado derecho del sistema original
+    x_gaussian = sol_gaussian[:len(sol_gaussian)//2] + 1j * sol_gaussian[len(sol_gaussian)//2:]
+    #Calcular Ax y comparar con el lado derecho del sistema original
     Ax_gaussian = np.dot(A_complex, x_gaussian)
 
-    endTime = time.time()
+    excecTime = time.time()-startTime
     # Calcular errores
     error_gaussian = np.linalg.norm(Ax_gaussian - b)
-    excecTime = endTime-startTime
+    
+    
     return excecTime,error_gaussian
 
 def solQR(W,T,b):
@@ -266,7 +316,7 @@ def solQR(W,T,b):
     # Resolver usando factorización QR sin np.linalg.qr
     Q_manual, R_manual = qr_factorization(A_real)
     sol_qr_manual = np.linalg.solve(R_manual, np.dot(Q_manual.T, d_real))
-    x_qr_manual = sol_qr_manual[:2] + 1j * sol_qr_manual[2:]
+    x_qr_manual = sol_qr_manual[:len(sol_qr_manual)//2] + 1j * sol_qr_manual[len(sol_qr_manual)//2:]
     Ax_qr_manual = np.dot(A_complex, x_qr_manual)
     excecTime = time.time()-start_time
     error_qr_manual = np.linalg.norm(Ax_qr_manual - b)
@@ -375,7 +425,7 @@ for i in range(len(linear_systems)):
     mhss((W+1j*T,b),x0,ITERMAX,TOL)
     
     elapsed_time,error = solQR(W,T,b)
-    print("Metodo5:\t factorizacion QR")
+    print("Metodo6:\t factorizacion QR")
     print("\tCaso:",(i+1),"\t"," m=",n)
     print("\terror = ",error)
     print("\tTiempo de ejecucion = ",elapsed_time," segs")

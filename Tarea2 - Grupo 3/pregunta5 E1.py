@@ -259,15 +259,17 @@ def solGaussiana(W,T,b):
     sol_gaussian = gaussian_elimination_complex(A_real, d_real)
     # Verificar las soluciones convirtiendo a números complejos
     A_complex = W + 1j * T
+    
     startTime = time.time()
-    x_gaussian = sol_gaussian[:2] + 1j * sol_gaussian[2:]
-    # Calcular Ax y comparar con el lado derecho del sistema original
+    x_gaussian = sol_gaussian[:len(sol_gaussian)//2] + 1j * sol_gaussian[len(sol_gaussian)//2:]
+    #Calcular Ax y comparar con el lado derecho del sistema original
     Ax_gaussian = np.dot(A_complex, x_gaussian)
 
-    endTime = time.time()
+    excecTime = time.time()-startTime
     # Calcular errores
     error_gaussian = np.linalg.norm(Ax_gaussian - b)
-    excecTime = endTime-startTime
+    
+    
     return excecTime,error_gaussian
 
 def solQR(W,T,b):
@@ -280,7 +282,7 @@ def solQR(W,T,b):
     # Resolver usando factorización QR sin np.linalg.qr
     Q_manual, R_manual = qr_factorization(A_real)
     sol_qr_manual = np.linalg.solve(R_manual, np.dot(Q_manual.T, d_real))
-    x_qr_manual = sol_qr_manual[:2] + 1j * sol_qr_manual[2:]
+    x_qr_manual = sol_qr_manual[:len(sol_qr_manual)//2] + 1j * sol_qr_manual[len(sol_qr_manual)//2:]
     Ax_qr_manual = np.dot(A_complex, x_qr_manual)
     excecTime = time.time()-start_time
     error_qr_manual = np.linalg.norm(Ax_qr_manual - b)
