@@ -1,7 +1,7 @@
 import time
 import numpy as np
 ITERMAX = 5000
-
+TOL = 1e-6
 """
 Matriz tridiagonal de mxm , con diagonal = b, 
 elemento a la izquierda de la diagonal = a
@@ -65,21 +65,31 @@ def hss(A, b, x0,  max_iter=1000, tol=1e-12):
     # Inicialización de variables
     n = A.shape[0]
     x = x0
+    #identiti
+    Im = np.identity(n)
 
+    
+    # inverse of (Im+iT)
+    Ki = np.linalg.solve(Im+1j*np.imag(A),Im)
+
+    #Im-W
+    H = Im-np.real(A)
+
+    #inverse of Im+W
+    Oi = np.linalg.solve(Im+np.real(A),Im)
+
+    #Im-iT
+    L = Im-1j*np.imag(A)
     # Inicialización de variables para medir el tiempo
     start_time = time.time()
-    iteraciones = 1
+    iteraciones = 0
     # Iteraciones del método HSS
     for k in range(max_iter):
         # Cálculo del residuo
-        r = b - np.dot(A, x)
+        z_k = np.dot(np.dot(Oi,L),x) + np.dot(Oi,b)
 
-        # Cálculo de la corrección z mediante la resolución de Ax = r
-        z = np.linalg.solve(A, r)
+        x = np.dot(np.dot(Ki,H),z_k) + np.dot(Ki,b)
 
-        x_prev = x
-        # Actualización de x con la corrección z
-        x = x + z
         iteraciones = k+1
         # Verificación de convergencia utilizando la norma Euclidiana
         if np.linalg.norm(np.dot(A, x) - b, 2) <= np.linalg.norm(b)*tol:
@@ -108,7 +118,10 @@ def PNHSS(W, T, p, q,max_iter, tol, x0):
     x_k = np.zeros(n, dtype=complex)
     Am = W + 1j*T
     b = p + 1j*q
+    iteraciones = 0
+    start_time = time.time()
     for k in range(max_iter):
+        iteraciones = k+1
         # Primer paso
         A = omega * W + T
         B = -1j * (omega * T - W) @ x_k + (omega - 1j) * (p + 1j * q)
@@ -124,9 +137,10 @@ def PNHSS(W, T, p, q,max_iter, tol, x0):
         error = np.linalg.norm(x_k - x_half)
 
         if np.linalg.norm(np.dot(Am,n)-b) < np.linalg.norm(b)*tol:
-            return x_k, error, max_iter
-
-    return x_k, error, max_iter
+            elapsed_time = time.time() - start_time
+            return x_k, error, iteraciones, elapsed_time
+    elapsed_time = time.time() - start_time
+    return x_k, error, max_iter, elapsed_time
 def PSHSS(W, T, p, q, alpha, omega, max_iter, tol, x0):
     n = len(p)
     I = alpha * np.eye(n, dtype=complex)
@@ -231,8 +245,8 @@ linear_systems = []
 for i in range(4,8):
     m = 2**i
     w,t,b = W_T_b(m)
-    linear_systems.append((m**2,w,t,b))
-    print(m**2)
+    linear_systems.append((m,w,t,b))
+    print(m)
 
 ##METODO 1 HSS
 for i in range(0,len(linear_systems)):
@@ -242,12 +256,27 @@ for i in range(0,len(linear_systems)):
     b = linear_systems[i][3]
     A = W + 1j*T
     x0 = np.zeros((n,1))
-    x, iter, elapsed_time, error = hss(A,b,x0,ITERMAX, 1e-6)
+    x, iter, elapsed_time, error = hss(A,b,x0,ITERMAX, TOL)
     print("Metodo1:\tHSS")
-    print("\n")
     print("\tCaso1:",(i+1),"\t","m=",n)
-    print("\n")
     print("\terror = ",error)
-    print("\n")
     print("\tTiempo de ejecucion = ",elapsed_time," segs")
-    print("\t Iteraciones = ",iter)
+    print("\tIteraciones = ",iter)
+    print("\n")
+
+#METODO 2 PNHSS
+
+for i in range(len(linear_systems)):
+    n = linear_systems[i][0]
+    W = linear_systems[i][1]
+    T = linear_systems[i][2]
+    b = linear_systems[i][3]
+    A = W + 1j*T
+    x0 = np.zeros((n,1))
+    x_k, error, iter, elapsed_time =PNHSS(W, T, np.real(b), np.imag(b),ITERMAX, TOL, x0)
+    print("Metodo1:\tHSS")
+    print("\tCaso1:",(i+1),"\t","m=",n)
+    print("\terror = ",error)
+    print("\tTiempo de ejecucion = ",elapsed_time," segs")
+    print("\tIteraciones = ",iter)
+    print("\n")
