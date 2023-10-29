@@ -1,7 +1,7 @@
 import numpy as np
 import time
 
-def hss(A, b, x0, exact_solution, max_iter=1000, tol=1e-12):
+def hss(A, b, x0, exact_solution, max_iter, tol):
     # Inicialización de variables
     n = A.shape[0]
     x = x0
