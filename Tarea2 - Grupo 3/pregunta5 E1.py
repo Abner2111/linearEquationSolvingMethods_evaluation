@@ -92,12 +92,12 @@ def hss(A, b, x0,  max_iter=1000, tol=1e-12):
 
         iteraciones = k+1
         # Verificación de convergencia utilizando la norma Euclidiana
-        if np.linalg.norm(np.dot(A, x) - b, 2) <= np.linalg.norm(b)*tol:
+        if np.linalg.norm(np.dot(A, x) - b) <= np.linalg.norm(b)*tol:
             # Cálculo del tiempo de ejecución
             elapsed_time = time.time() - start_time
 
             # Cálculo del error en comparación con la solución exacta
-            error = np.linalg.norm(np.dot(A, x) - b, 2)
+            error = np.linalg.norm(np.dot(A, x) - b)
             
 
             # Devolver variables por separado
@@ -105,7 +105,7 @@ def hss(A, b, x0,  max_iter=1000, tol=1e-12):
 
     # Si no converge en max_iter iteraciones
     elapsed_time = time.time() - start_time
-    error = np.linalg.norm(np.dot(A, x) - b, 2)
+    error = np.linalg.norm(np.dot(A, x) - b)
     return x, max_iter, elapsed_time, error
 
 
@@ -176,7 +176,7 @@ def mhss(A, x0, iter_max, tol):
     x = x0
 
     # Descomposición de la matriz A en W y T
-    W, T = A
+    W, T = np.real(A[0]),  np.imag(A[0])
     # Cálculo de los valores propios de la matriz W
     eigenvalues_W = np.linalg.eigvals(W)
     # Cálculo de alpha* según la fórmula dada
@@ -184,17 +184,23 @@ def mhss(A, x0, iter_max, tol):
     # Cálculo de M(α) y N(α) según las fórmulas
     M = np.linalg.inv(alpha_star * Im + T).dot((alpha_star * Im + 1j * W).dot(np.linalg.inv(alpha_star * Im + W).dot(alpha_star * Im - 1j * T)))
     N = (1 - 1j) * alpha_star * np.linalg.inv(alpha_star * Im + T).dot(np.linalg.inv(alpha_star * Im + W))
-
+    iterations = 0
+    start_time = time.time()
     # Iteración principal del método
     for k in range(iter_max):
+        iterations = k+1
         # Cálculo de la nueva aproximación x(k+1)
         x_new = M.dot(x) + N.dot(A[1])
+
+        error = np.linalg.norm(A[0].dot(x_new) - A[1])
         # Comprobación del criterio de parada
         if np.linalg.norm(A[0].dot(x_new) - A[1]) < tol*np.linalg.norm(A[1]):
-            return x_new
+            elapsed_time = time.time() - start_time
+            return x_new, error,iterations, elapsed_time
         x = x_new
-
-    return x
+    elapsed_time = time.time() - start_time
+    error = np.linalg.norm(A[0].dot(x_new) - A[1])
+    return x,error, iter_max,elapsed_time
 
 def gaussian_elimination_complex(M, d):
     # Tamaño del sistema de ecuaciones
@@ -294,6 +300,24 @@ for i in range(len(linear_systems)):
     x0 = np.zeros((n**2,1))
     x_k, error, iter, elapsed_time =PSHSS(W, T, np.real(b), np.imag(b),1,1,ITERMAX, TOL, x0)
     print("Metodo3:\tPSHSS")
+    print("\tCaso:",(i+1),"\t"," m=",n)
+    print("\terror = ",error)
+    print("\tTiempo de ejecucion = ",elapsed_time," segs")
+    print("\tIteraciones = ",iter)
+    print("\n")
+
+#METODO 4 MHSS(W, T, p, q, alpha, omega, max_iter, tol, x0)for i in range(len(linear_systems)):
+for i in range(len(linear_systems)):
+    n = linear_systems[i][0]
+    W = linear_systems[i][1]
+    T = linear_systems[i][2]
+    b = linear_systems[i][3]
+    A = W + 1j*T
+    x0 = np.zeros((n**2,1))
+    mhss((W+1j*T,b),x0,ITERMAX,TOL)
+    
+    x_k, error, iter, elapsed_time = mhss((W+1j*T,b),x0,ITERMAX,TOL)
+    print("Metodo4:\tmHSS")
     print("\tCaso:",(i+1),"\t"," m=",n)
     print("\terror = ",error)
     print("\tTiempo de ejecucion = ",elapsed_time," segs")
