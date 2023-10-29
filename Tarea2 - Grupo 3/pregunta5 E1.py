@@ -57,10 +57,7 @@ def W_T_b(m):
     return W*(h*h),T*(h*h),b*(h*h)
 
 
-w,t,b = W_T_b(3)
-print(w)
-print(t)
-print(b)
+
 #-----------------------------------------------------------------------
 #METODOS DE SOLUCION DE SISTEMAS LINEALES
 
