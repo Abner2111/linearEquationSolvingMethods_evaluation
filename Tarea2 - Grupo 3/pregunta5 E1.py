@@ -229,6 +229,7 @@ def gaussian_elimination_complex(M, d):
     return x
 
 def qr_factorization(A):
+    
     # Dimensiones de la matriz A
     m, n = A.shape
     # Matrices Q y R inicializadas
@@ -244,10 +245,46 @@ def qr_factorization(A):
             v -= R[i, j] * Q[:, i]
 
         # Calcula la entrada diagonal de R y normaliza el vector v
-        R[j, j] = np.linalg.norm(v, 2)
+        R[j, j] = np.linalg.norm(v)
         Q[:, j] = v / R[j, j]
 
     return Q, R
+def solGaussiana(W,T,b):
+    p = np.real(b)
+    q = np.imag(b)
+    # Construir la matriz aumentada y el vector de constantes
+    A_real = np.block([[W, -T], [T, W]])
+    d_real = np.concatenate([p, q])
+    # Resolver usando eliminación gaussiana
+    sol_gaussian = gaussian_elimination_complex(A_real, d_real)
+    # Verificar las soluciones convirtiendo a números complejos
+    A_complex = W + 1j * T
+    startTime = time.time()
+    x_gaussian = sol_gaussian[:2] + 1j * sol_gaussian[2:]
+    # Calcular Ax y comparar con el lado derecho del sistema original
+    Ax_gaussian = np.dot(A_complex, x_gaussian)
+
+    endTime = time.time()
+    # Calcular errores
+    error_gaussian = np.linalg.norm(Ax_gaussian - b)
+    excecTime = endTime-startTime
+    return excecTime,error_gaussian
+
+def solQR(W,T,b):
+    p = np.real(b)
+    q = np.imag(b)
+    start_time = time.time()
+    A_real = np.block([[W, -T], [T, W]])
+    d_real = np.concatenate([p, q])
+    A_complex = W + 1j * T
+    # Resolver usando factorización QR sin np.linalg.qr
+    Q_manual, R_manual = qr_factorization(A_real)
+    sol_qr_manual = np.linalg.solve(R_manual, np.dot(Q_manual.T, d_real))
+    x_qr_manual = sol_qr_manual[:2] + 1j * sol_qr_manual[2:]
+    Ax_qr_manual = np.dot(A_complex, x_qr_manual)
+    excecTime = time.time()-start_time
+    error_qr_manual = np.linalg.norm(Ax_qr_manual - b)
+    return excecTime, error_qr_manual
 
 #generacion de sistemas lineales
 linear_systems = []
@@ -322,4 +359,38 @@ for i in range(len(linear_systems)):
     print("\terror = ",error)
     print("\tTiempo de ejecucion = ",elapsed_time," segs")
     print("\tIteraciones = ",iter)
+    print("\n")
+
+#METODO 5 eliminacion gaussiana(W, T, p, q, alpha, omega, max_iter, tol, x0)for i in range(len(linear_systems)):
+for i in range(len(linear_systems)):
+    n = linear_systems[i][0]
+    W = linear_systems[i][1]
+    T = linear_systems[i][2]
+    b = linear_systems[i][3]
+    A = W + 1j*T
+    x0 = np.zeros((n**2,1))
+    mhss((W+1j*T,b),x0,ITERMAX,TOL)
+    
+    elapsed_time,error = solGaussiana(W,T,b)
+    print("Metodo5:\t eliminación gaussiana")
+    print("\tCaso:",(i+1),"\t"," m=",n)
+    print("\terror = ",error)
+    print("\tTiempo de ejecucion = ",elapsed_time," segs")
+    print("\n")
+
+#METODO 6 factorizacion QR (W, T, p, q, alpha, omega, max_iter, tol, x0)for i in range(len(linear_systems)):
+for i in range(len(linear_systems)):
+    n = linear_systems[i][0]
+    W = linear_systems[i][1]
+    T = linear_systems[i][2]
+    b = linear_systems[i][3]
+    A = W + 1j*T
+    x0 = np.zeros((n**2,1))
+    mhss((W+1j*T,b),x0,ITERMAX,TOL)
+    
+    elapsed_time,error = solQR(W,T,b)
+    print("Metodo5:\t factorizacion QR")
+    print("\tCaso:",(i+1),"\t"," m=",n)
+    print("\terror = ",error)
+    print("\tTiempo de ejecucion = ",elapsed_time," segs")
     print("\n")
