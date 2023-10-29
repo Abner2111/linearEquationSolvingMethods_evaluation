@@ -420,6 +420,7 @@ def solQR(W,T,b):
 #generacion de sistemas lineales
 linear_systems = []
 
+##the limits of the range can be changed. right now it is from 2^4 to 2^6. If more testing is needed, the upper limit has to be changed, but it requires a lot of ram
 for i in range(4,6):
     m = 2**i
     w,t,b = W_T_b(m)
