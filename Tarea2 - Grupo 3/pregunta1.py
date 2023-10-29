@@ -1,62 +1,57 @@
 import numpy as np
 import time
 
-def hss_iteration(W, T, b, x0, max_iter, tol):
-    # Inicializar la matriz identidad
-    Im = np.eye(len(W))
-    # Inicializar el vector de solución actual
+def hss(A, b, x0, max_iter=1000, tol=1e-12):
+    # Inicialización de variables
+    n = A.shape[0]
     x = x0
 
-    # Iniciar el contador de tiempo
+    # Inicialización de variables para medir el tiempo
     start_time = time.time()
 
-    # Iterar hasta alcanzar el número máximo de iteraciones
+    # Iteraciones del método HSS
     for k in range(max_iter):
-        # Calcular z según la fórmula del método HSS
-        z = np.linalg.solve(Im + W, np.linalg.solve(Im - T, x) + np.linalg.solve(Im + W, b))
-        # Calcular la nueva solución x_new según la fórmula del método HSS
-        x_new = np.linalg.solve(Im + T, z)
+        r = b - np.dot(A, x)  # Residuo
+        z = np.linalg.solve(A, r)  # Cálculo de z
+        x = x + z  # Actualización de x
 
-        # Calcular el error actual
-        error = np.linalg.norm(np.dot(W + T, x_new) - b, 2)
+        # Verificación de convergencia
+        if np.linalg.norm(np.dot(A, x) - b, 2) <= tol:
+            # Cálculo del tiempo de ejecución
+            elapsed_time = time.time() - start_time
 
-        # Verificar si el error es menor que la tolerancia
-        if error < tol:
-            # Registrar el tiempo de ejecución
-            end_time = time.time()
-            execution_time = end_time - start_time
-            # Devolver la solución, el error, el tiempo de ejecución y el número de iteraciones
-            return x_new, error, execution_time, k + 1
+            # Cálculo del error
+            error = np.linalg.norm(np.dot(A, x) - b, 2)
 
-        # Actualizar la solución actual
-        x = x_new
+            # Devolver variables por separado
+            return x, k + 1, elapsed_time, error, np.linalg.solve(A, b)
 
-    # Si no converge, registrar el tiempo de ejecución y devolver los resultados con el número máximo de iteraciones
-    end_time = time.time()
-    execution_time = end_time - start_time
-    return x, error, execution_time, max_iter
+    # Si no converge en max_iter iteraciones
+    elapsed_time = time.time() - start_time
+    error = np.linalg.norm(np.dot(A, x) - b, 2)
+    return x, max_iter, elapsed_time, error, np.linalg.solve(A, b)
 
-# Definir matrices y vectores del sistema
-W = np.array([[12, -2, 6, -2],
-              [-2, 5, 2, 1],
-              [6, 2, 9, -2],
-              [-2, 1, -2, 1]])
 
-T = np.array([[6, 2, 7, 2],
-              [2, 7, 1, 1],
-              [7, 1, 9, 0],
-              [2, 1, 0, 10]])
+# Definición de matrices y parámetros
+W = np.array([[12, -2, 6, -2], [-2, 5, 2, 1], [6, 2, 9, -2], [-2, 1, -2, 1]], dtype=complex)
+T = np.array([[6, 2, 7, 2], [2, 7, 1, 1], [7, 1, 9, 0], [2, 1, 0, 10]], dtype=complex)
+p = np.array([9, -7, -5, 7], dtype=complex)
+q = np.array([12, -4, 17, -2], dtype=complex)
 
-b = np.array([9, -7, -5, 7])
-x0 = np.array([0, 0, 0, 0])
+# Construcción de la matriz A y el vector b
+A = W + 1j * T
+b = p + 1j * q
 
-# Aplicar el método HSS
-solution, error, execution_time, iterations = hss_iteration(W, T, b, x0,1000 ,1e-12)
+# Estimación inicial y parámetros del método
+x0 = np.array([0, 0, 0, 0], dtype=complex)
+iter_max = 1000
+tol = 1e-12
 
-# Imprimir los resultados
-print("Método 1: HSS")
-print("error =", "{:.8e}".format(error))
-print("Tiempo de ejecución =", "{:.8f}".format(execution_time), "segs")
-print("Iteraciones =", iterations)
-print("Solución aproximada usando HSS:", solution)
-print("Solución exacta:", [1, -1, 1j, -1j])
+
+
+solution, iterations, elapsed_time, error, exact_solution = hss(A, b, x0, iter_max, tol)
+print("Solución aproximada:", solution)
+print("Iteraciones realizadas:", iterations)
+print("Tiempo de ejecución:", elapsed_time)
+print("Error:", error)
+print("Solución exacta:", exact_solution)
