@@ -2,6 +2,23 @@ import numpy as np
 
 # Función que implementa el método MHSS
 def mhss(A, x0, iter_max, tol):
+    """
+    The function `mhss` implements the Modified Hermitian and Skew-Hermitian Splitting method for
+    solving a linear system of equations.
+    
+    :param A: The parameter A is a tuple containing two matrices. The first matrix, A[0], represents the
+    coefficient matrix in the linear system of equations. The second matrix, A[1], represents the
+    constant vector in the linear system of equations
+    :param x0: The initial approximation vector
+    :param iter_max: The parameter "iter_max" represents the maximum number of iterations that the
+    method will perform before stopping
+    :param tol: The parameter "tol" stands for tolerance and it represents the desired level of accuracy
+    or convergence in the solution. It determines the maximum allowable difference between the actual
+    solution and the desired solution. If the difference falls below this tolerance value, the iteration
+    process is considered to have converged and the solution is returned
+    :return: the final approximation of the solution vector x after performing the specified number of
+    iterations.
+    """
     # Tamaño del vector x0
     m = len(x0)
     # Matriz identidad del mismo tamaño que x0
@@ -9,7 +26,7 @@ def mhss(A, x0, iter_max, tol):
     x = x0
 
     # Descomposición de la matriz A en W y T
-    W, T = A
+    W, T = np.real(A[0]),  np.imag(A[0])
     # Cálculo de los valores propios de la matriz W
     eigenvalues_W = np.linalg.eigvals(W)
     # Cálculo de alpha* según la fórmula dada

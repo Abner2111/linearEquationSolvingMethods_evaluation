@@ -1,6 +1,17 @@
 import numpy as np
 
 def gaussian_elimination_complex(M, d):
+    """
+    The function `gaussian_elimination_complex` performs Gaussian elimination with complex numbers to
+    solve a system of linear equations.
+    
+    :param M: The parameter M is a square matrix representing the coefficients of the system of linear
+    equations. Each row of M corresponds to an equation, and each column corresponds to a variable
+    :param d: The parameter `d` represents the vector of constants in the system of equations. It is a
+    1-dimensional array of complex numbers. Each element of `d` corresponds to the constant term in each
+    equation
+    :return: the solution vector x, which is a numpy array of complex numbers.
+    """
     # Tamaño del sistema de ecuaciones
     n = len(d)
     # Crear la matriz aumentada
@@ -27,6 +38,13 @@ def gaussian_elimination_complex(M, d):
     return x
 
 def qr_factorization(A):
+    """
+    The `qr_factorization` function performs QR factorization on a given matrix A and returns the
+    orthogonal matrix Q and the upper triangular matrix R.
+    
+    :param A: A is a matrix of shape (m, n)
+    :return: two matrices: Q and R.
+    """
     # Dimensiones de la matriz A
     m, n = A.shape
     # Matrices Q y R inicializadas

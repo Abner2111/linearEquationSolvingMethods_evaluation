@@ -2,6 +2,25 @@ import numpy as np
 import time
 
 def hss(A, b, x0, exact_solution, max_iter, tol):
+    """
+    The function `hss` implements the HSS (Hilbert-Schmidt Smoothing) method to solve a linear system of
+    equations.
+    
+    :param A: A is a square matrix of size n x n. It represents the coefficient matrix of a linear
+    system of equations
+    :param b: The parameter "b" represents the right-hand side vector in the linear system of equations
+    Ax = b. It is a column vector of size n, where n is the number of unknowns in the system
+    :param x0: The initial guess for the solution vector x
+    :param exact_solution: The exact_solution parameter is the known solution to the linear system of
+    equations Ax = b. It is used to calculate the error in the solution obtained by the HSS method
+    :param max_iter: The maximum number of iterations allowed for the HSS method
+    :param tol: tol is the tolerance level for convergence. It is the maximum acceptable difference
+    between the calculated solution and the exact solution. If the difference is below this tolerance
+    level, the method is considered to have converged
+    :return: the following variables: x (the approximate solution), k + 1 (the number of iterations
+    performed), elapsed_time (the time taken to execute the method), error (the error in comparison with
+    the exact solution), and exact_solution (the provided exact solution).
+    """
     # Inicialización de variables
     n = A.shape[0]
     x = x0

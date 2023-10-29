@@ -62,6 +62,24 @@ def W_T_b(m):
 #METODOS DE SOLUCION DE SISTEMAS LINEALES
 
 def hss(A, b, x0,  max_iter=1000, tol=1e-12):
+    """
+    The function `hss` implements the HSS (Hermitian and Skew-Symmetric) method for solving a linear
+    system of equations.
+    
+    :param A: A is a square matrix of size n x n
+    :param b: The parameter `b` represents the right-hand side vector in the linear system of equations
+    `Ax = b`, where `A` is the coefficient matrix and `x` is the unknown vector. It contains the values
+    on the right-hand side of each equation
+    :param x0: The initial guess for the solution vector x
+    :param max_iter: The maximum number of iterations allowed for the HSS method. If the method does not
+    converge within this number of iterations, it will stop and return the current solution, defaults to
+    1000 (optional)
+    :param tol: The parameter "tol" stands for tolerance and it is used to determine the convergence
+    criteria for the method. It represents the maximum acceptable error between the computed solution
+    and the actual solution. If the error falls below this tolerance, the method is considered to have
+    converged
+    :return: four variables: x, iteraciones, elapsed_time, and error.
+    """
     # Inicialización de variables
     n = A.shape[0]
     x = x0
@@ -110,6 +128,27 @@ def hss(A, b, x0,  max_iter=1000, tol=1e-12):
 
 
 def PNHSS(W, T, p, q,max_iter, tol, x0):
+    """
+    The function `PNHSS` implements the Preconditioned Non-Hermitian Symmetric Successive Overrelaxation
+    (PNHSS) method to solve a linear system of equations.
+    
+    :param W: W is a square matrix of size n x n, representing the real part of the coefficient matrix
+    in a linear system of equations
+    :param T: The parameter T represents a matrix in the PNHSS function. It is used in the calculations
+    of the first and second steps of the algorithm
+    :param p: The parameter `p` represents the real part of the right-hand side vector in a linear
+    system of equations. It is a numpy array of shape (n,), where n is the size of the system
+    :param q: The parameter `q` represents the imaginary part of the vector `b` in the equation `Ax =
+    b`, where `A` is a matrix and `x` is the unknown vector
+    :param max_iter: The maximum number of iterations allowed for the algorithm to converge
+    :param tol: tol is the tolerance level for convergence. It is used to determine when to stop the
+    iteration process. If the norm of the difference between the product of matrix Am and vector x_k and
+    vector b is less than tol times the norm of vector b, the iteration process is considered converged
+    and stopped
+    :param x0: The initial guess for the solution vector x
+    :return: four values: x_k (the solution vector), error (the error in the solution), iteraciones (the
+    number of iterations performed), and elapsed_time (the time taken to execute the function).
+    """
     alpha = 1
     omega = 1
     n = len(p)
@@ -142,6 +181,35 @@ def PNHSS(W, T, p, q,max_iter, tol, x0):
     elapsed_time = time.time() - start_time
     return x_k, error, max_iter, elapsed_time
 def PSHSS(W, T, p, q, alpha, omega, max_iter, tol, x0):
+    """
+    The function `PSHSS` solves a linear system of equations using the Preconditioned Hermitian and
+    Skew-Symmetric (PSHSS) method.
+    
+    :param W: The parameter W represents a real-valued matrix
+    :param T: The parameter T represents the imaginary part of the matrix A in the linear system Ax = b.
+    It is a square matrix of size n x n
+    :param p: The parameter `p` represents the real part of the right-hand side vector in the linear
+    system of equations. It is a 1-dimensional numpy array of length `n`, where `n` is the size of the
+    system
+    :param q: The parameter `q` represents the imaginary part of the right-hand side vector in the
+    linear system of equations
+    :param alpha: Alpha is a scalar value used in the PSHSS algorithm. It is multiplied by the identity
+    matrix to create the matrix I
+    :param omega: Omega is a scalar parameter used in the PSHSS function. It is used to control the
+    convergence behavior of the iterative solver
+    :param max_iter: The parameter "max_iter" represents the maximum number of iterations that the
+    algorithm will perform before terminating
+    :param tol: The parameter "tol" stands for tolerance. It is a small positive value that determines
+    the convergence criteria for the iterative solver. The algorithm will stop iterating when the norm
+    of the residual (difference between the computed solution and the actual solution) is less than the
+    product of the norm of the right-hand side
+    :param x0: The initial guess for the solution vector x
+    :return: the following values:
+    1. x_k: The solution vector.
+    2. error: The error between the product of matrix Am and x_k and the vector b.
+    3. iteraciones: The number of iterations performed.
+    4. elapsed_time: The time taken to execute the function.
+    """
     n = len(p)
     I = alpha * np.eye(n, dtype=complex)
     x_half = np.zeros(n, dtype=complex)
@@ -169,6 +237,24 @@ def PSHSS(W, T, p, q, alpha, omega, max_iter, tol, x0):
 
 # Función que implementa el método MHSS
 def mhss(A, x0, iter_max, tol):
+    """
+    The function `mhss` implements the Modified Hermitian and Skew-Hermitian Splitting method for
+    solving a linear system of equations.
+    
+    :param A: The parameter A is a tuple containing two matrices. The first matrix, A[0], represents the
+    coefficient matrix in the linear system of equations. The second matrix, A[1], represents the
+    constant vector in the linear system of equations
+    :param x0: The initial approximation vector
+    :param iter_max: The parameter "iter_max" represents the maximum number of iterations that the
+    algorithm will perform before stopping. It is used as a stopping criterion to prevent the algorithm
+    from running indefinitely
+    :param tol: The parameter "tol" stands for tolerance. It is a small positive number that determines
+    the desired accuracy of the solution. The algorithm will stop iterating when the error, which is the
+    difference between the actual solution and the approximation, is smaller than tol times the norm of
+    the right-hand side vector A[
+    :return: the final approximation of the solution vector x, the error of the approximation, the
+    number of iterations performed, and the elapsed time in seconds.
+    """
     # Tamaño del vector x0
     m = len(x0)
     # Matriz identidad del mismo tamaño que x0
@@ -203,6 +289,17 @@ def mhss(A, x0, iter_max, tol):
     return x,error, iter_max,elapsed_time
 
 def gaussian_elimination_complex(M, d):
+    """
+    The function `gaussian_elimination_complex` performs Gaussian elimination with complex numbers to
+    solve a system of linear equations.
+    
+    :param M: The parameter M is a square matrix representing the coefficients of the system of linear
+    equations. Each row of M corresponds to an equation, and each column corresponds to a variable
+    :param d: The parameter `d` represents the vector of constants in the system of equations. It is a
+    1-dimensional array of complex numbers. Each element of `d` corresponds to the constant term in each
+    equation
+    :return: the solution vector x, which is a numpy array of complex numbers.
+    """
     # Tamaño del sistema de ecuaciones
     n = len(d)
     # Crear la matriz aumentada
@@ -229,6 +326,13 @@ def gaussian_elimination_complex(M, d):
     return x
 
 def qr_factorization(A):
+    """
+    The function `qr_factorization` performs QR factorization on a given matrix A and returns the
+    matrices Q and R.
+    
+    :param A: A is a matrix of shape (m, n) that we want to factorize using QR factorization
+    :return: two matrices: Q and R.
+    """
     
     # Dimensiones de la matriz A
     m, n = A.shape
@@ -250,6 +354,15 @@ def qr_factorization(A):
 
     return Q, R
 def solGaussiana(W,T,b):
+    """
+    The function `solGaussiana` solves a system of linear equations using Gaussian elimination and
+    calculates the execution time and error of the solution.
+    
+    :param W: The parameter W represents the real part of the matrix in the system of equations
+    :param T: The parameter T represents the imaginary part of the matrix W
+    :param b: The parameter "b" represents a complex vector of constants in a system of linear equations
+    :return: The function `solGaussiana` returns two values: `excecTime` and `error_gaussian`.
+    """
     p = np.real(b)
     q = np.imag(b)
     # Construir la matriz aumentada y el vector de constantes
@@ -273,6 +386,16 @@ def solGaussiana(W,T,b):
     return excecTime,error_gaussian
 
 def solQR(W,T,b):
+    """
+    The function `solQR` calculates the execution time and error of a QR factorization and solves a
+    linear system using the factorization.
+    
+    :param W: The parameter W represents the real part of the matrix A in the equation Ax = b
+    :param T: The parameter T represents the imaginary part of the matrix A. It is used in the
+    calculation of the real and complex parts of the matrix A
+    :param b: The parameter `b` is a complex-valued vector
+    :return: The function `solQR` returns two values: `excecTime` and `error_qr_manual`.
+    """
     p = np.real(b)
     q = np.imag(b)
     start_time = time.time()
@@ -391,7 +514,7 @@ for i in range(len(linear_systems)):
     mhss((W+1j*T,b),x0,ITERMAX,TOL)
     
     elapsed_time,error = solQR(W,T,b)
-    print("Metodo5:\t factorizacion QR")
+    print("Metodo6:\t factorizacion QR")
     print("\tCaso:",(i+1),"\t"," m=",n)
     print("\terror = ",error)
     print("\tTiempo de ejecucion = ",elapsed_time," segs")
