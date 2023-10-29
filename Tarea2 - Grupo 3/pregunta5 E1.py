@@ -115,7 +115,7 @@ def PNHSS(W, T, p, q,max_iter, tol, x0):
     n = len(p)
     I = alpha * np.eye(n, dtype=complex)
     x_half = np.zeros(n, dtype=complex)
-    x_k = np.zeros(n, dtype=complex)
+    x_k = x0
     Am = W + 1j*T
     b = p + 1j*q
     iteraciones = 0
@@ -134,9 +134,9 @@ def PNHSS(W, T, p, q,max_iter, tol, x0):
         x_k = np.linalg.solve(C, D)
 
         # Calcular el error
-        error = np.linalg.norm(x_k - x_half)
+        error = np.linalg.norm(np.dot(Am,x_k)-b)
 
-        if np.linalg.norm(np.dot(Am,n)-b) < np.linalg.norm(b)*tol:
+        if np.linalg.norm(np.dot(Am,x_k)-b) < np.linalg.norm(b)*tol:
             elapsed_time = time.time() - start_time
             return x_k, error, iteraciones, elapsed_time
     elapsed_time = time.time() - start_time
@@ -145,23 +145,27 @@ def PSHSS(W, T, p, q, alpha, omega, max_iter, tol, x0):
     n = len(p)
     I = alpha * np.eye(n, dtype=complex)
     x_half = np.zeros(n, dtype=complex)
-    x_k = np.zeros(n, dtype=complex)
+    x_k = x0
     Am = W + 1j*T
     b = p + 1j*q
 
+    iteraciones = 0
+    start_time = time.time()
     for k in range(max_iter):
+        iteraciones = k+1
         X = alpha * I + omega * W + T
         Z = (alpha * I - 1j * (omega * T - W)) @ x_k + \
             (omega - 1j) * (p + 1j * q)
         x_k = np.linalg.solve(X, Z)
 
         # Calcular el error
-        error = np.linalg.norm(x_k - x_half)
+        error = np.linalg.norm(np.dot(Am,x_k)-b)
 
-        if np.linalg.norm(np.dot(Am,n)-b) < np.linalg.norm(b)*tol:
-            return x_k, error, max_iter
-
-    return x_k, error, max_iter
+        if np.linalg.norm(np.dot(Am,x_k)-b) < np.linalg.norm(b)*tol:
+            elapsed_time = time.time() - start_time
+            return x_k, error, max_iter,elapsed_time
+    elapsed_time = time.time() - start_time
+    return x_k, error, max_iter,elapsed_time
 
 # Función que implementa el método MHSS
 def mhss(A, x0, iter_max, tol):
@@ -242,7 +246,7 @@ def qr_factorization(A):
 #generacion de sistemas lineales
 linear_systems = []
 
-for i in range(4,8):
+for i in range(4,6):
     m = 2**i
     w,t,b = W_T_b(m)
     linear_systems.append((m,w,t,b))
@@ -255,27 +259,41 @@ for i in range(0,len(linear_systems)):
     T = linear_systems[i][2]
     b = linear_systems[i][3]
     A = W + 1j*T
-    x0 = np.zeros((n,1))
+    x0 = np.zeros((n**2,1))
     x, iter, elapsed_time, error = hss(A,b,x0,ITERMAX, TOL)
     print("Metodo1:\tHSS")
-    print("\tCaso1:",(i+1),"\t","m=",n)
+    print("\tCaso:",(i+1),"\t","m=",n)
     print("\terror = ",error)
     print("\tTiempo de ejecucion = ",elapsed_time," segs")
     print("\tIteraciones = ",iter)
     print("\n")
 
 #METODO 2 PNHSS
-
 for i in range(len(linear_systems)):
     n = linear_systems[i][0]
     W = linear_systems[i][1]
     T = linear_systems[i][2]
     b = linear_systems[i][3]
     A = W + 1j*T
-    x0 = np.zeros((n,1))
+    x0 = np.zeros((n**2,1))
     x_k, error, iter, elapsed_time =PNHSS(W, T, np.real(b), np.imag(b),ITERMAX, TOL, x0)
-    print("Metodo1:\tHSS")
-    print("\tCaso1:",(i+1),"\t","m=",n)
+    print("Metodo2:\tPNHSS")
+    print("\tCaso:",(i+1),"\t"," m=",n)
+    print("\terror = ",error)
+    print("\tTiempo de ejecucion = ",elapsed_time," segs")
+    print("\tIteraciones = ",iter)
+    print("\n")
+
+#METODO 3 PSHSS(W, T, p, q, alpha, omega, max_iter, tol, x0)for i in range(len(linear_systems)):
+    n = linear_systems[i][0]
+    W = linear_systems[i][1]
+    T = linear_systems[i][2]
+    b = linear_systems[i][3]
+    A = W + 1j*T
+    x0 = np.zeros((n**2,1))
+    x_k, error, iter, elapsed_time =PSHSS(W, T, np.real(b), np.imag(b),1,1,ITERMAX, TOL, x0)
+    print("Metodo2:\tPSHSS")
+    print("\tCaso:",(i+1),"\t"," m=",n)
     print("\terror = ",error)
     print("\tTiempo de ejecucion = ",elapsed_time," segs")
     print("\tIteraciones = ",iter)
