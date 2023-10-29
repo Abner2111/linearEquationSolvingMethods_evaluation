@@ -61,15 +61,17 @@ w,t,b = W_T_b(3)
 print(w)
 print(t)
 print(b)
+#-----------------------------------------------------------------------
+#METODOS DE SOLUCION DE SISTEMAS LINEALES
 
-def hss(A, b, x0, exact_solution, max_iter=1000, tol=1e-12):
+def hss(A, b, x0,  max_iter=1000, tol=1e-12):
     # Inicialización de variables
     n = A.shape[0]
     x = x0
 
     # Inicialización de variables para medir el tiempo
     start_time = time.time()
-
+    iteraciones = 1
     # Iteraciones del método HSS
     for k in range(max_iter):
         # Cálculo del residuo
@@ -78,25 +80,26 @@ def hss(A, b, x0, exact_solution, max_iter=1000, tol=1e-12):
         # Cálculo de la corrección z mediante la resolución de Ax = r
         z = np.linalg.solve(A, r)
 
+        x_prev = x
         # Actualización de x con la corrección z
         x = x + z
-
+        iteraciones = k+1
         # Verificación de convergencia utilizando la norma Euclidiana
         if np.linalg.norm(np.dot(A, x) - b, 2) <= np.linalg.norm(b)*tol:
             # Cálculo del tiempo de ejecución
             elapsed_time = time.time() - start_time
 
             # Cálculo del error en comparación con la solución exacta
-            error = np.linalg.norm(x - exact_solution, 2)
+            error = np.linalg.norm(np.dot(A, x) - b, 2)
             
 
             # Devolver variables por separado
-            return x, k + 1, elapsed_time, error, exact_solution
+            return x, iteraciones, elapsed_time, error
 
     # Si no converge en max_iter iteraciones
     elapsed_time = time.time() - start_time
-    error = np.linalg.norm(x - exact_solution, 2)
-    return x, max_iter, elapsed_time, error, exact_solution
+    error = np.linalg.norm(np.dot(A, x) - b, 2)
+    return x, max_iter, elapsed_time, error
 
 
 def PNHSS(W, T, p, q,max_iter, tol, x0):
@@ -148,3 +151,106 @@ def PSHSS(W, T, p, q, alpha, omega, max_iter, tol, x0):
             return x_k, error, max_iter
 
     return x_k, error, max_iter
+
+# Función que implementa el método MHSS
+def mhss(A, x0, iter_max, tol):
+    # Tamaño del vector x0
+    m = len(x0)
+    # Matriz identidad del mismo tamaño que x0
+    Im = np.eye(m, dtype=complex)
+    x = x0
+
+    # Descomposición de la matriz A en W y T
+    W, T = A
+    # Cálculo de los valores propios de la matriz W
+    eigenvalues_W = np.linalg.eigvals(W)
+    # Cálculo de alpha* según la fórmula dada
+    alpha_star = np.sqrt(np.min(eigenvalues_W) * np.max(eigenvalues_W))
+    # Cálculo de M(α) y N(α) según las fórmulas
+    M = np.linalg.inv(alpha_star * Im + T).dot((alpha_star * Im + 1j * W).dot(np.linalg.inv(alpha_star * Im + W).dot(alpha_star * Im - 1j * T)))
+    N = (1 - 1j) * alpha_star * np.linalg.inv(alpha_star * Im + T).dot(np.linalg.inv(alpha_star * Im + W))
+
+    # Iteración principal del método
+    for k in range(iter_max):
+        # Cálculo de la nueva aproximación x(k+1)
+        x_new = M.dot(x) + N.dot(A[1])
+        # Comprobación del criterio de parada
+        if np.linalg.norm(A[0].dot(x_new) - A[1]) < tol*np.linalg.norm(A[1]):
+            return x_new
+        x = x_new
+
+    return x
+
+def gaussian_elimination_complex(M, d):
+    # Tamaño del sistema de ecuaciones
+    n = len(d)
+    # Crear la matriz aumentada
+    augmented_matrix = np.concatenate((M.astype(np.complex128), d.astype(np.complex128).reshape(-1, 1)), axis=1)
+
+    # Eliminación gaussiana
+    for i in range(n):
+        # Encuentra la fila con el pivote más grande y realiza intercambio
+        pivot_row = max(range(i, n), key=lambda k: abs(augmented_matrix[k, i]))
+        augmented_matrix[[i, pivot_row]] = augmented_matrix[[pivot_row, i]]
+
+        # Hace ceros debajo del pivote en la columna actual
+        for j in range(i + 1, n):
+            factor = augmented_matrix[j, i] / augmented_matrix[i, i]
+            augmented_matrix[j, i:] -= factor * augmented_matrix[i, i:]
+
+    # Sustitución hacia atrás para encontrar la solución
+    x = np.zeros(n, dtype=np.complex128)
+    for i in range(n - 1, -1, -1):
+        x[i] = augmented_matrix[i, -1] / augmented_matrix[i, i]
+        for j in range(i - 1, -1, -1):
+            augmented_matrix[j, -1] -= augmented_matrix[j, i] * x[i]
+
+    return x
+
+def qr_factorization(A):
+    # Dimensiones de la matriz A
+    m, n = A.shape
+    # Matrices Q y R inicializadas
+    Q = np.zeros((m, n), dtype=np.complex128)
+    R = np.zeros((n, n), dtype=np.complex128)
+
+    # Factorización QR
+    for j in range(n):
+        v = A[:, j].copy().astype(np.complex128)  # Copia y asegura tipo complejo
+        for i in range(j):
+            # Calcula las entradas de R y actualiza el vector v
+            R[i, j] = np.dot(Q[:, i].conj(), A[:, j])
+            v -= R[i, j] * Q[:, i]
+
+        # Calcula la entrada diagonal de R y normaliza el vector v
+        R[j, j] = np.linalg.norm(v, 2)
+        Q[:, j] = v / R[j, j]
+
+    return Q, R
+
+#generacion de sistemas lineales
+linear_systems = []
+
+for i in range(4,8):
+    m = 2**i
+    w,t,b = W_T_b(m)
+    linear_systems.append((m**2,w,t,b))
+    print(m**2)
+
+##METODO 1 HSS
+for i in range(0,len(linear_systems)):
+    n = linear_systems[i][0]
+    W = linear_systems[i][1]
+    T = linear_systems[i][2]
+    b = linear_systems[i][3]
+    A = W + 1j*T
+    x0 = np.zeros((n,1))
+    x, iter, elapsed_time, error = hss(A,b,x0,ITERMAX, 1e-6)
+    print("Metodo1:\tHSS")
+    print("\n")
+    print("\tCaso1:",(i+1),"\t","m=",n)
+    print("\n")
+    print("\terror = ",error)
+    print("\n")
+    print("\tTiempo de ejecucion = ",elapsed_time," segs")
+    print("\t Iteraciones = ",iter)
